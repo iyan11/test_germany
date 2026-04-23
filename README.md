@@ -55,6 +55,7 @@ Note: configuration loader reads `.env` values from `$_ENV`/`$_SERVER` first (an
 - For route differences, client automatically tries both singular/plural endpoints:
   - `manufacturer` -> fallback `manufacturers`
   - `product` -> fallback `products`
+  - for each route it also tries variants with leading/trailing slash
 
 For TLS/certificate issues (e.g. cURL error 60):
 - Preferred: set `YSELL_CA_BUNDLE=/absolute/path/to/cacert.pem`

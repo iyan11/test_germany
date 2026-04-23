@@ -24,7 +24,7 @@ final class YsellClient
     /** @return array<int, Product> */
     public function getProducts(): array
     {
-        $data = $this->requestFirstAvailable('GET', ['product', 'products']);
+        $data = $this->requestFirstAvailable('GET', $this->expandUriVariants('product', 'products'));
         if (!is_array($data)) {
             return [];
         }
@@ -51,7 +51,11 @@ final class YsellClient
 
     public function getProductById(int $id): ?Product
     {
-        $data = $this->requestFirstAvailable('GET', ['product/' . $id, 'products/' . $id], allow404: true);
+        $data = $this->requestFirstAvailable(
+            'GET',
+            $this->expandUriVariants('product/' . $id, 'products/' . $id),
+            allow404: true,
+        );
         if (!is_array($data) || $data === []) {
             return null;
         }
@@ -72,7 +76,7 @@ final class YsellClient
     /** @return array<int, Manufacturer> */
     public function getManufacturers(): array
     {
-        $data = $this->requestFirstAvailable('GET', ['manufacturer', 'manufacturers']);
+        $data = $this->requestFirstAvailable('GET', $this->expandUriVariants('manufacturer', 'manufacturers'));
         if (!is_array($data)) {
             return [];
         }
@@ -110,6 +114,29 @@ final class YsellClient
         }
 
         return [];
+    }
+
+    /** @return array<int, string> */
+    private function expandUriVariants(string ...$bases): array
+    {
+        $result = [];
+        foreach ($bases as $base) {
+            $normalized = trim($base, '/');
+            $variants = [
+                $normalized,
+                $normalized . '/',
+                '/' . $normalized,
+                '/' . $normalized . '/',
+            ];
+
+            foreach ($variants as $variant) {
+                if (!in_array($variant, $result, true)) {
+                    $result[] = $variant;
+                }
+            }
+        }
+
+        return $result;
     }
 
     /** @return mixed */
