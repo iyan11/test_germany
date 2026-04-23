@@ -43,6 +43,8 @@ php bin/generate-ebay-flat.php \
 
 If `YSELL_BASE_URL` is missing, CLI exits with a clear config error instead of throwing low-level cURL exceptions.
 
+Note: configuration loader reads `.env` values from `$_ENV`/`$_SERVER` first (and `getenv` as fallback), which is important on Windows/PHP setups where `getenv()` may not expose Dotenv-loaded variables.
+
 ## Important Behavior
 
 - Reads the **first row from template** as headers.
