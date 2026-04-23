@@ -68,7 +68,19 @@ $httpClient = new Client([
     'base_uri' => $baseUrl . '/',
     'timeout' => $appConfig['ysell']['timeout'],
     'http_errors' => false,
+    'verify' => (function (array $ysellConfig): bool|string {
+        $caBundle = trim((string) ($ysellConfig['ca_bundle'] ?? ''));
+        if ($caBundle !== '') {
+            return $caBundle;
+        }
+
+        return (bool) ($ysellConfig['ssl_verify'] ?? true);
+    })($appConfig['ysell']),
 ]);
+
+if (($appConfig['ysell']['ssl_verify'] ?? true) === false) {
+    $logger->warning('YSELL SSL verification is disabled via YSELL_SSL_VERIFY=false. Use only for local debugging.');
+}
 
 $service = new GenerateEbayFlatService(
     ysellClient: new YsellClient(

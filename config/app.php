@@ -9,6 +9,8 @@ return [
         'base_url' => Env::getString('YSELL_BASE_URL'),
         'bearer_token' => Env::getString('YSELL_BEARER_TOKEN'),
         'timeout' => Env::getFloat('YSELL_TIMEOUT', 10),
+        'ssl_verify' => Env::getBool('YSELL_SSL_VERIFY', true),
+        'ca_bundle' => Env::getString('YSELL_CA_BUNDLE'),
     ],
     'pricing' => [
         'default_price' => Env::getFloat('DEFAULT_PRICE', 12.99),

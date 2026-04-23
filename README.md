@@ -53,6 +53,10 @@ Note: configuration loader reads `.env` values from `$_ENV`/`$_SERVER` first (an
   - missing/invalid `YSELL_BEARER_TOKEN`,
   - network/TLS issue in local PHP+cURL environment.
 
+For TLS/certificate issues (e.g. cURL error 60):
+- Preferred: set `YSELL_CA_BUNDLE=/absolute/path/to/cacert.pem`
+- Temporary local workaround: set `YSELL_SSL_VERIFY=false` (not for production)
+
 ## Important Behavior
 
 - Reads the **first row from template** as headers.

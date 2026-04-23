@@ -26,6 +26,17 @@ final class Env
         return (float) $value;
     }
 
+    public static function getBool(string $key, bool $default): bool
+    {
+        $value = self::raw($key);
+        if ($value === null || $value === '') {
+            return $default;
+        }
+
+        $normalized = mb_strtolower(trim($value));
+        return in_array($normalized, ['1', 'true', 'yes', 'on'], true);
+    }
+
     private static function raw(string $key): string|null
     {
         if (array_key_exists($key, $_ENV)) {
