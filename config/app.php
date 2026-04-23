@@ -5,6 +5,7 @@ declare(strict_types=1);
 return [
     'ysell' => [
         'base_url' => getenv('YSELL_BASE_URL') ?: '',
+        'bearer_token' => getenv('YSELL_BEARER_TOKEN') ?: '',
         'timeout' => (float) (getenv('YSELL_TIMEOUT') ?: 10),
     ],
     'pricing' => [

@@ -15,6 +15,7 @@ final class YsellClient
 {
     public function __construct(
         private readonly ClientInterface $client,
+        private readonly string $bearerToken = '',
         private readonly int $maxRetries = 3,
         private readonly int $retryDelayMs = 250,
     ) {
@@ -23,7 +24,7 @@ final class YsellClient
     /** @return array<int, Product> */
     public function getProducts(): array
     {
-        $data = $this->requestJson('GET', '/product');
+        $data = $this->requestJson('GET', 'product');
         if (!is_array($data)) {
             return [];
         }
@@ -50,7 +51,7 @@ final class YsellClient
 
     public function getProductById(int $id): ?Product
     {
-        $data = $this->requestJson('GET', '/product/' . $id, allow404: true);
+        $data = $this->requestJson('GET', 'product/' . $id, allow404: true);
         if (!is_array($data) || $data === []) {
             return null;
         }
@@ -71,7 +72,7 @@ final class YsellClient
     /** @return array<int, Manufacturer> */
     public function getManufacturers(): array
     {
-        $data = $this->requestJson('GET', '/manufacturer');
+        $data = $this->requestJson('GET', 'manufacturer');
         if (!is_array($data)) {
             return [];
         }
@@ -95,7 +96,12 @@ final class YsellClient
         do {
             $attempt++;
             try {
-                $response = $this->client->request($method, $uri);
+                $options = [];
+                if ($this->bearerToken !== '') {
+                    $options['headers'] = ['Authorization' => 'Bearer ' . $this->bearerToken];
+                }
+
+                $response = $this->client->request($method, $uri, $options);
                 $status = $response->getStatusCode();
                 if ($allow404 && $status === 404) {
                     return [];

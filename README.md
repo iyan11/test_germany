@@ -19,6 +19,10 @@ cp .env.example .env
 
 Adjust `.env` values as needed.
 
+Required YSELL vars:
+- `YSELL_BASE_URL` (for example: `https://4457.test1.ysell.pro/api`)
+- `YSELL_BEARER_TOKEN` (if your API requires Bearer auth)
+
 ## CLI Usage
 
 ```bash
@@ -36,6 +40,8 @@ php bin/generate-ebay-flat.php \
 - `--dry-run` - no file save, only processing/logging
 - `--verbose` - debug logging
 - `--format=xlsx|csv` - output format (`xlsx` default)
+
+If `YSELL_BASE_URL` is missing, CLI exits with a clear config error instead of throwing low-level cURL exceptions.
 
 ## Important Behavior
 

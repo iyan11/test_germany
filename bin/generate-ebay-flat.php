@@ -30,9 +30,7 @@ use GuzzleHttp\Client;
 require __DIR__ . '/../vendor/autoload.php';
 
 $root = dirname(__DIR__);
-if (file_exists($root . '/.env')) {
-    Dotenv::createImmutable($root)->safeLoad();
-}
+Dotenv::createImmutable($root)->safeLoad();
 
 $appConfig = require $root . '/config/app.php';
 $categoryMap = require $root . '/config/categories.php';
@@ -57,14 +55,26 @@ if (!in_array($format, ['xlsx', 'csv'], true)) {
 
 $logger = new ConsoleLogger($verbose);
 
+$baseUrl = rtrim((string) $appConfig['ysell']['base_url'], '/');
+if ($baseUrl === '') {
+    fwrite(
+        STDERR,
+        "YSELL_BASE_URL is empty. Set it in .env (example: https://4457.test1.ysell.pro/api)\n",
+    );
+    exit(1);
+}
+
 $httpClient = new Client([
-    'base_uri' => $appConfig['ysell']['base_url'],
+    'base_uri' => $baseUrl . '/',
     'timeout' => $appConfig['ysell']['timeout'],
     'http_errors' => false,
 ]);
 
 $service = new GenerateEbayFlatService(
-    ysellClient: new YsellClient($httpClient),
+    ysellClient: new YsellClient(
+        client: $httpClient,
+        bearerToken: (string) $appConfig['ysell']['bearer_token'],
+    ),
     categoryResolver: new LocalKeywordCategoryResolver($categoryMap, $appConfig['ebay']['fallback_category_id']),
     priceCalculator: new HeuristicPriceCalculator(
         markup: (float) $appConfig['pricing']['markup'],
@@ -103,4 +113,9 @@ $command = new GenerateEbayFlatCommand(
     format: $format,
 );
 
-$service->handle($command);
+try {
+    $service->handle($command);
+} catch (Throwable $exception) {
+    fwrite(STDERR, 'Generation failed: ' . $exception->getMessage() . PHP_EOL);
+    exit(1);
+}
