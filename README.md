@@ -45,6 +45,14 @@ If `YSELL_BASE_URL` is missing, CLI exits with a clear config error instead of t
 
 Note: configuration loader reads `.env` values from `$_ENV`/`$_SERVER` first (and `getenv` as fallback), which is important on Windows/PHP setups where `getenv()` may not expose Dotenv-loaded variables.
 
+### Troubleshooting YSELL connection
+
+- If you see `YSELL API request failed ... after 3 attempts`, inspect the appended `Last error` in output.
+- Typical causes:
+  - wrong `YSELL_BASE_URL` (must include `/api` if your backend expects it),
+  - missing/invalid `YSELL_BEARER_TOKEN`,
+  - network/TLS issue in local PHP+cURL environment.
+
 ## Important Behavior
 
 - Reads the **first row from template** as headers.

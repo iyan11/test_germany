@@ -93,6 +93,8 @@ final class YsellClient
     private function requestJson(string $method, string $uri, bool $allow404 = false): mixed
     {
         $attempt = 0;
+        $lastError = null;
+
         do {
             $attempt++;
             try {
@@ -107,20 +109,38 @@ final class YsellClient
                     return [];
                 }
                 if ($status >= 400) {
-                    throw new YsellApiException(sprintf('YSELL API HTTP %d for %s', $status, $uri));
+                    $body = trim((string) $response->getBody());
+                    $bodyPreview = mb_substr($body, 0, 300);
+                    throw new YsellApiException(
+                        sprintf('YSELL API HTTP %d for %s. Response: %s', $status, $uri, $bodyPreview),
+                    );
                 }
 
                 return json_decode((string) $response->getBody(), true, 512, JSON_THROW_ON_ERROR);
             } catch (\JsonException|GuzzleException $exception) {
+                $lastError = sprintf('%s: %s', $exception::class, $exception->getMessage());
                 if ($attempt >= $this->maxRetries) {
                     throw new YsellApiException(
-                        sprintf('YSELL API request failed for %s after %d attempts', $uri, $attempt),
+                        sprintf(
+                            'YSELL API request failed for %s after %d attempts. Last error: %s',
+                            $uri,
+                            $attempt,
+                            $lastError,
+                        ),
                         previous: $exception,
                     );
                 }
                 usleep($this->retryDelayMs * 1000 * $attempt);
+            } catch (YsellApiException $exception) {
+                throw $exception;
             }
         } while ($attempt < $this->maxRetries);
+
+        if ($lastError !== null) {
+            throw new YsellApiException(
+                sprintf('YSELL API request failed for %s. Last error: %s', $uri, $lastError),
+            );
+        }
 
         return [];
     }
