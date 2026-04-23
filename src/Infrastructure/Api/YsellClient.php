@@ -24,7 +24,7 @@ final class YsellClient
     /** @return array<int, Product> */
     public function getProducts(): array
     {
-        $data = $this->requestJson('GET', 'product');
+        $data = $this->requestFirstAvailable('GET', ['product', 'products']);
         if (!is_array($data)) {
             return [];
         }
@@ -51,7 +51,7 @@ final class YsellClient
 
     public function getProductById(int $id): ?Product
     {
-        $data = $this->requestJson('GET', 'product/' . $id, allow404: true);
+        $data = $this->requestFirstAvailable('GET', ['product/' . $id, 'products/' . $id], allow404: true);
         if (!is_array($data) || $data === []) {
             return null;
         }
@@ -72,7 +72,7 @@ final class YsellClient
     /** @return array<int, Manufacturer> */
     public function getManufacturers(): array
     {
-        $data = $this->requestJson('GET', 'manufacturer');
+        $data = $this->requestFirstAvailable('GET', ['manufacturer', 'manufacturers']);
         if (!is_array($data)) {
             return [];
         }
@@ -87,6 +87,29 @@ final class YsellClient
         }
 
         return $result;
+    }
+
+    /** @return mixed */
+    private function requestFirstAvailable(string $method, array $uris, bool $allow404 = false): mixed
+    {
+        $lastException = null;
+        foreach ($uris as $uri) {
+            try {
+                return $this->requestJson($method, $uri, $allow404);
+            } catch (YsellApiException $exception) {
+                $lastException = $exception;
+                if ($exception->httpStatus() === 404) {
+                    continue;
+                }
+                throw $exception;
+            }
+        }
+
+        if ($lastException !== null) {
+            throw $lastException;
+        }
+
+        return [];
     }
 
     /** @return mixed */
@@ -113,6 +136,7 @@ final class YsellClient
                     $bodyPreview = mb_substr($body, 0, 300);
                     throw new YsellApiException(
                         sprintf('YSELL API HTTP %d for %s. Response: %s', $status, $uri, $bodyPreview),
+                        httpStatus: $status,
                     );
                 }
 
