@@ -19,7 +19,8 @@ final class XlsxTemplateExporter
         $headerToIndex = [];
         $maxColumn = Coordinate::columnIndexFromString($sheet->getHighestColumn());
         for ($col = 1; $col <= $maxColumn; $col++) {
-            $header = trim((string) $sheet->getCellByColumnAndRow($col, 1)->getValue());
+            $headerCell = Coordinate::stringFromColumnIndex($col) . '1';
+            $header = trim((string) $sheet->getCell($headerCell)->getValue());
             if ($header !== '') {
                 $headerToIndex[$header] = $col;
             }
@@ -31,7 +32,8 @@ final class XlsxTemplateExporter
                 if (!isset($headerToIndex[$field])) {
                     continue;
                 }
-                $sheet->setCellValueByColumnAndRow($headerToIndex[$field], $rowIndex, $value);
+                $cell = Coordinate::stringFromColumnIndex($headerToIndex[$field]) . $rowIndex;
+                $sheet->setCellValue($cell, $value);
             }
             $rowIndex++;
         }

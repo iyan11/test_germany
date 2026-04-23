@@ -18,7 +18,8 @@ final class CsvExporter
         $headers = [];
         $highestCol = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($sheet->getHighestColumn());
         for ($col = 1; $col <= $highestCol; $col++) {
-            $headers[] = (string) $sheet->getCellByColumnAndRow($col, 1)->getValue();
+            $cell = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col) . '1';
+            $headers[] = (string) $sheet->getCell($cell)->getValue();
         }
 
         $dir = dirname($outputPath);
